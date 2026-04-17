@@ -1,35 +1,44 @@
 ---
-title: "Project"
+title: "408_Project"
+author: Sydney Mylan & Corina Amundson
 format: html
 ---
 
-```{r}
-library(readxl)
+```{r, message=FALSE}
 library(GGally)
 library(tidyverse)
-
 library(ggplot2)
 library(maps)
 library(usmap)
+```
 
-read
-arch_records <- data(vmnh_archaeology_catalog_records)
+```{r}
+arch_records <- read.csv("~/Downloads/408/Final Project/408-Project-Arch-Data/new.csv")
 
-head(arch_records)
 names(arch_records)
-colnames(arch_records)
+
+arch_records <- arch_records |>
+rename(state = `State.Prov.Sea`)
 ```
 
 ```{r}
-ggplot(arch_records, aes(x = `Class 2`, y = Quantity)) +
-geom_point(aes(color = `Class 4`))
+ggplot(arch_records, aes(x = `Class.4`)) +
+  geom_bar(aes(fill = `Class.4`)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ```{r}
-#Just messing around with map data, please ignore
-plot_usmap(fill = "grey30", color = "white")
-plot_usmap(color = "white", data = arch_records, values = "state")
-plot_usmap(color = "white", data = arch_records, values = "state")+
-scale_fill_gradient(high = "blue", low = "white")
+ggplot(arch_records, aes(x = Class.2)) +
+  geom_bar(aes(fill = Class.4))
+```
+
+```{r}
+ggplot(arch_records, aes(x = `Class.2`, y = Quantity)) +
+geom_point(aes(color = `Class.4`))
+```
+
+```{r}
+plot_usmap(color = "white", data = arch_records, values = "state") +
+  theme(legend.position = "right")
 ```
 
