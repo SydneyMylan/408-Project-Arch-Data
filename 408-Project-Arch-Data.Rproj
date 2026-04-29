@@ -1,27 +1,13 @@
-Version: 1.0
-
-RestoreWorkspace: Default
-SaveWorkspace: Default
-AlwaysSaveHistory: Default
-
-EnableCodeIndexing: Yes
-UseSpacesForTab: Yes
-NumSpacesForTab: 2
-Encoding: UTF-8
-
-RnwWeave: Sweave
-LaTeX: pdfLaTeX
-
-
-
-
-
 library(GGally)
 library(ggplot2)
 library(maps)
-
 library(tidyverse)
 library(readr)
+library(readxl)
+library(usmap)
+library(ggplot2)
+
+#reading in Data
 arch_data <- read_csv("new.csv")
 View(arch_data)
 
@@ -34,7 +20,25 @@ names(arch_data) = c("Subject", "Time", "Type", "Class",
                      "Collector", "Locality", "Country", "State", 
                      "City", "SiteID", "SiteName", "Map", "Remarks")
 
-#mutating cells to match each other
+#Assigning Subject as numerical for data cleaning
+arch_data_fixed <- arch_data_fixed |>
+  mutate(Subject = as.numeric(Subject))
+
+#Removing Unnecessary Variables
+arch_data_fixed <-  subset(arch_data_fixed, select = 
+                             -c(SiteID, SiteName, Map, Remarks, Locality))
+#Summary of Data
+head(arch_data_fixed)
+
+
+#Data cleaning for Mapping
+
+#viewing
+arch_data_fixed |>
+  distinct(State) |>
+  pull(State)
+
+#mutating states to match each other
 arch_data_fixed = arch_data |>
   mutate(State = case_when(
     State %in% c("NC") ~ "North Carolina",
@@ -45,25 +49,6 @@ arch_data_fixed = arch_data |>
     State == "Virginia/NC" ~ "Virginia",
     .default = State
   ))
-
-#Removing Unnecessary Variables
-names(arch_data_fixed)
-
-arch_data_fixed <-  subset(arch_data_fixed, select = 
-                             -c(SiteID, SiteName, Map, Remarks, Locality))
-view(arch_data_fixed)
-
-
-
-#Data cleaning for Mapping
-library(readxl)
-library(usmap)
-library(ggplot2)
-
-#viewing
-arch_data_fixed |>
-  distinct(State) |>
-  pull(State)
 
 #filtering by state and quantity into a new data set
 map_data <- arch_data_fixed |> 
@@ -86,10 +71,6 @@ map_data <- na.omit(map_data)
 map_data <- map_data |>
   group_by(State) |>
   summarise(S_Quantity = sum(Quantity, na.rm = TRUE))
-view(map_data)
-
-#Compare to statepop dataset
-view(statepop)
 
 #Adding in States as NA that were not included in dataset
 map_data_fixed <- map_data |> add_row(
@@ -140,33 +121,46 @@ map_data_fixed <- map_data_fixed |> add_row(
 map_data_fixed <- map_data_fixed |> add_row(
   State = "Wyoming", S_Quantity = NA)
 
-
-
-#View all 50 States Alphabetically
+#Ordering all States Alphabetically
 map_data_fixed <- map_data_fixed[order(map_data_fixed$State), ]
 
+#add in Puerto Rico after the alphabetization to match statepop
 map_data_fixed <- map_data_fixed |> add_row(
   State = "Puerto Rico", S_Quantity = NA)
 view(map_data_fixed)
 
 
+#Plotting
 
-#Plotting US Gradient Map
+#matching arch data to statepop
 map_data_fixed$fips <- statepop$fips
 map_data_fixed$abbr <- statepop$abbr
 
-
-plot_usmap(data = map_data_fixed,
+#Plot all States where Artifacts were Observed
+USA_MAP <- plot_usmap(data = map_data_fixed,
            values = "S_Quantity") +
   labs(title = "States where Artifacts were Observed") + 
   theme(panel.background = element_rect(colour = "black"))+
-  scale_fill_continuous(low = "lightblue", high ="tomato", 
+  scale_fill_continuous(low = "lightblue", high ="lightblue", 
                         name = "Quantity",label = scales::comma)+
-  theme(legend.position = "right")
+  theme(legend.position = "FALSE")
+
+#Plot Bar Plot with top 5 States by Quantity
+map_data2 <- map_data |> 
+  filter(S_Quantity > 500) 
+map_data2 <- map_data2[order(map_data2$S_Quantity), ]
+
+BAR_PLOT <- ggplot(map_data2, aes(x=State, y=S_Quantity)) + 
+  geom_bar(fill = "tomato", stat = "identity") + labs(
+    x = "Number of Artifacts Observed",
+    y = "State",
+    title = "Top 5 States with the most Artifacts") +
+  geom_text(aes(label = S_Quantity), vjust = -0.2) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-
-plot_usmap(data = map_data_fixed,
+#Plot Gradient Map by States and Quantity (0-100)
+USA_0100_MAP <- plot_usmap(data = map_data_fixed,
                     values = "S_Quantity") +
   labs(title = "States Where Less Than 100 Artifacts were Observed") + 
   theme(panel.background = element_rect(colour = "black"))+
@@ -176,33 +170,6 @@ plot_usmap(data = map_data_fixed,
   theme(legend.position = "right")
 
 
-
-plot_usmap(data = map_data_fixed,
-           values = "S_Quantity") +
-  labs(title = "States Where 100 to 500 Artifacts were Observed") + 
-  theme(panel.background = element_rect(colour = "black"))+
-  scale_fill_continuous(low = "lightblue", high ="tomato", 
-                        name = "Quantity",label = scales::comma,
-                        limits = c(100,500)) + 
-  theme(legend.position = "right")
-
-
-
-plot_usmap(data = map_data_fixed,
-           values = "S_Quantity") +
-  labs(title = "States Where over 500 Artifacts were Observed") + 
-  theme(panel.background = element_rect(colour = "black"))+
-  scale_fill_continuous(low = "lightblue", high ="tomato", 
-                        name = "Quantity",label = scales::comma,
-                        limits = c(500,148000)) + 
-  theme(legend.position = "right")
-
-plot_usmap(data = map_data_fixed,
-           values = "S_Quantity") +
-  labs(title = "Virginia State Where 147,426 Artifacts were Observed") + 
-  theme(panel.background = element_rect(colour = "black"))+
-  scale_fill_continuous(low = "lightblue", high ="tomato", 
-                        name = "Quantity",label = scales::comma,
-                        limits = c(140000,147426)) + 
-  theme(legend.position = "right")
-
+USA_MAP
+USA_0100_MAP
+BAR_PLOT
