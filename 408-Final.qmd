@@ -1,0 +1,76 @@
+---
+title: "408-Final"
+author: Corina Amundson
+format: dashboard
+---
+
+```{r}
+library(readxl)
+library(usmap)
+library(ggplot2)
+library(GGally)
+library(ggplot2)
+library(maps)
+
+library(tidyverse)
+library(readr)
+arch_data <- read_csv("new.csv")
+
+#Renaming Columns
+names(arch_data) = c("Subject", "Time", "Type", "Class", 
+                     "Description", "Material", "Name", "Quantity", 
+                     "Collector", "Locality", "Country", "State", 
+                     "City", "SiteID", "SiteName", "Map", "Remarks")
+
+#mutating cells to match each other
+arch_data_fixed = arch_data |>
+  mutate(State = case_when(
+    State %in% c("NC") ~ "North Carolina",
+    State == "SC" ~ "South Carolina",
+    State == "OH" ~ "Ohio",
+    State == "FL" ~ "Florida",
+    State == "VA" ~ "Virginia",
+    State == "Virginia/NC" ~ "Virginia",
+    .default = State
+  ))
+
+#Removing Unnecessary Variables
+
+arch_data_fixed <-  subset(arch_data_fixed, select = 
+                             -c(SiteID, SiteName, Map, Remarks, Locality))
+
+arch_data_clean <- arch_data_fixed %>%
+  mutate(Material_clean = Material %>%
+           str_to_lower() %>%
+           str_trim() %>%
+           str_replace_all("[[:punct:]]+", " ") %>%
+           str_squish())
+
+arch_data_clean <- arch_data_clean %>%
+  filter(
+    !is.na(Type), Type != "",
+    !is.na(Class), Class != "",
+    !is.na(Material_clean), Material_clean != ""
+  )
+
+```
+
+# Overview of data
+
+::: card
+words hear
+:::
+
+#Geographic
+
+```{r}
+
+```
+
+#Artifacts
+
+#Virginia Specific
+
+#Conclusion
+
+::: {.card title = "Summary"} :::
