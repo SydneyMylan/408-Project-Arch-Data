@@ -25,13 +25,13 @@ arch_data_fixed <- arch_data |>
 
 #Removing Unnecessary Variables
 arch_data_fixed <-  subset(arch_data_fixed, select = 
-                             -c(SiteID, SiteName, Map, Remarks, Locality,Collector))
+                             -c(SiteID, SiteName, Map, Remarks, Locality, Collector))
 
 
 #Data cleaning for Geographical Mapping
 
 #mutating states to match each other
-arch_data_fixed = arch_data |>
+arch_data_fixed = arch_data_fixed |>
   mutate(State = case_when(
     State %in% c("NC") ~ "North Carolina",
     State == "SC" ~ "South Carolina",
@@ -165,4 +165,3 @@ Arch_Table
 USA_MAP
 USA_0100_MAP
 BAR_PLOT
-
