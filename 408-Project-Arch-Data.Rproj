@@ -9,7 +9,6 @@ library(ggplot2)
 
 #reading in Data
 arch_data <- read_csv("new.csv")
-View(arch_data)
 
 
 #Cleaning the data
@@ -27,18 +26,9 @@ arch_data_fixed <- arch_data |>
 #Removing Unnecessary Variables
 arch_data_fixed <-  subset(arch_data_fixed, select = 
                              -c(SiteID, SiteName, Map, Remarks, Locality,Collector))
-view(arch_data_fixed) 
-
-#Summary of Data
-glimpse(arch_data_fixed)
 
 
 #Data cleaning for Geographical Mapping
-
-#viewing
-arch_data_fixed |>
-  distinct(State) |>
-  pull(State)
 
 #mutating states to match each other
 arch_data_fixed = arch_data |>
@@ -51,6 +41,8 @@ arch_data_fixed = arch_data |>
     State == "Virginia/NC" ~ "Virginia",
     .default = State
   ))
+
+Arch_Table <- glimpse(arch_data_fixed)
 
 #filtering by state and quantity into a new data set
 map_data <- arch_data_fixed |> 
@@ -128,8 +120,6 @@ map_data_fixed <- map_data_fixed[order(map_data_fixed$State), ]
 #add in Puerto Rico after the alphabetization to match statepop
 map_data_fixed <- map_data_fixed |> add_row(
   State = "Puerto Rico", S_Quantity = NA)
-view(map_data_fixed)
-
 
 #Plotting
 
@@ -170,7 +160,9 @@ USA_0100_MAP <- plot_usmap(data = map_data_fixed,
                         limits = c(0,100)) + 
   theme(legend.position = "right")
 
-
+#Outputs 
+Arch_Table
 USA_MAP
 USA_0100_MAP
 BAR_PLOT
+
