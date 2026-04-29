@@ -21,17 +21,19 @@ names(arch_data) = c("Subject", "Time", "Type", "Class",
                      "City", "SiteID", "SiteName", "Map", "Remarks")
 
 #Assigning Subject as numerical for data cleaning
-arch_data_fixed <- arch_data_fixed |>
+arch_data_fixed <- arch_data |>
   mutate(Subject = as.numeric(Subject))
 
 #Removing Unnecessary Variables
 arch_data_fixed <-  subset(arch_data_fixed, select = 
-                             -c(SiteID, SiteName, Map, Remarks, Locality))
+                             -c(SiteID, SiteName, Map, Remarks, Locality,Collector))
+view(arch_data_fixed) 
+
 #Summary of Data
-head(arch_data_fixed)
+glimpse(arch_data_fixed)
 
 
-#Data cleaning for Mapping
+#Data cleaning for Geographical Mapping
 
 #viewing
 arch_data_fixed |>
@@ -53,7 +55,6 @@ arch_data_fixed = arch_data |>
 #filtering by state and quantity into a new data set
 map_data <- arch_data_fixed |> 
   select(State | Quantity) 
-view(map_data)
 
 #ordering alphabetically
 map_data <- map_data[order(map_data$State), ]
