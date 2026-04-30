@@ -1,20 +1,32 @@
 ---
-title: "408-Final"
-author: Corina Amundson
+title: "Archaeological Data"
+author: Sydney Mylan & Corina Amundson
 format: dashboard
 ---
 
-```{r}
+```{r setup}
+#| warning: false
+#| message: false
+#| output: false
+library(ggraph)
+library(igraph)
+library(tidyverse)
+library(RColorBrewer)
 library(readxl)
 library(usmap)
 library(ggplot2)
 library(GGally)
-library(ggplot2)
 library(maps)
-
-library(tidyverse)
 library(readr)
+library(knitr)
+library(stringr)
+library(forcats)
+library(easyalluvial)
+
+#Read in Data
 arch_data <- read_csv("new.csv")
+
+#Cleaning the data
 
 #Renaming Columns
 names(arch_data) = c("Subject", "Time", "Type", "Class", 
@@ -22,8 +34,19 @@ names(arch_data) = c("Subject", "Time", "Type", "Class",
                      "Collector", "Locality", "Country", "State", 
                      "City", "SiteID", "SiteName", "Map", "Remarks")
 
-#mutating cells to match each other
-arch_data_fixed = arch_data |>
+#Assigning Subject as numerical for data cleaning
+arch_data_fixed <- arch_data |>
+  mutate(Subject = as.numeric(Subject))
+
+#Removing Unnecessary Variables
+arch_data_fixed <-  subset(arch_data_fixed, select = 
+                             -c(SiteID, SiteName, Map, Remarks, Locality, Collector))
+
+
+#Data cleaning for Geographical Mapping
+
+#mutating states to match each other
+arch_data_fixed = arch_data_fixed |>
   mutate(State = case_when(
     State %in% c("NC") ~ "North Carolina",
     State == "SC" ~ "South Carolina",
@@ -34,43 +57,85 @@ arch_data_fixed = arch_data |>
     .default = State
   ))
 
-#Removing Unnecessary Variables
+#Data visualization 
+Arch_Table <- head(arch_data_fixed, 10)
 
-arch_data_fixed <-  subset(arch_data_fixed, select = 
-                             -c(SiteID, SiteName, Map, Remarks, Locality))
+#filtering by state and quantity into a new data set
+map_data <- arch_data_fixed |> 
+  select(State | Quantity)  
 
-arch_data_clean <- arch_data_fixed %>%
-  mutate(Material_clean = Material %>%
-           str_to_lower() %>%
-           str_trim() %>%
-           str_replace_all("[[:punct:]]+", " ") %>%
-           str_squish())
+#ordering alphabetically
+map_data <- map_data[order(map_data$State), ]
 
-arch_data_clean <- arch_data_clean %>%
-  filter(
-    !is.na(Type), Type != "",
-    !is.na(Class), Class != "",
-    !is.na(Material_clean), Material_clean != ""
-  )
+#labeling non states as NA and removing them
+map_data = map_data |>
+  mutate(State = case_when(
+    State == "Zaire" ~ NA,
+    State == "Finchaven" ~ NA,
+    .default = State
+  ))
+map_data <- na.omit(map_data)
 
+#Summarizing quantity by state
+map_data <- map_data |>
+  group_by(State) |>
+  summarise(S_Quantity = sum(Quantity, na.rm = TRUE))
+
+#Adding in States as NA that were not included in dataset
+map_data_fixed <- map_data |> add_row(
+  State = "Alabama", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Alaska", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Colorado", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "District of Columbia", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Hawaii", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Idaho", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Louisiana", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Maine", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Massachusetts", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Montana", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Nebraska", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "New Hampshire", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "North Dakota", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Rhode Island", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "South Dakota", S_Quantity = NA)
+
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Wyoming", S_Quantity = NA)
+
+#Ordering all States Alphabetically
+map_data_fixed <- map_data_fixed[order(map_data_fixed$State), ]
+
+#add in Puerto Rico after the alphabetization to match statepop
+map_data_fixed <- map_data_fixed |> add_row(
+  State = "Puerto Rico", S_Quantity = NA)
 ```
 
-# Overview of data
 
-::: card
-words hear
-:::
-
-#Geographic
-
-```{r}
-
-```
-
-#Artifacts
-
-#Virginia Specific
-
-#Conclusion
-
-::: {.card title = "Summary"} :::
