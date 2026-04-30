@@ -233,3 +233,15 @@ owl_rows_1 <- owl_rows |>
 ```
 
 
+# Overview
+
+
+The Archaeological Scientific Collection from the Virginia Museum of Natural History contains more than 450,000 cataloged artifacts and samples documenting human history, material culture, and archaeological research across different geographic regions and time periods. The dataset is organized through multiple quantitative and categorical variables.
+
+
+
+```{r}
+#| title: Overview of Data
+kable(Arch_Table)
+```
+
