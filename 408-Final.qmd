@@ -245,3 +245,23 @@ The Archaeological Scientific Collection from the Virginia Museum of Natural His
 kable(Arch_Table)
 ```
 
+
+# Geographic
+
+## Row {width=60%}
+```{r}
+USA_MAP
+```
+
+```{r fig.height = 10, fig.width = 12}
+BAR_PLOT
+```
+## Row {width=40%}
+
+```{r}
+USA_0100_MAP
+```
+
+::: {.card}
+
+:::
