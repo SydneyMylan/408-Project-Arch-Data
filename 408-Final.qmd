@@ -383,3 +383,30 @@ ggplot(owl_rows_1, aes(x = Name)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), 
         legend.position = "none")
 ```
+
+# Conclusion
+
+## Row {height="80%"}
+
+::: {.card title="Conclusion"}
+Write conclusion
+:::
+
+::: {.card title="Work Cited"}
+Website to Virginia Museum of Natural History:
+https://www.vmnh.net/research-collections/scientific-collections 
+
+Sydney's & Corina's Repo:
+https://github.com/SydneyMylan/408-Project-Arch-Data
+
+Deprogram Resource:
+https://r-graph-gallery.com/dendrogram.html
+
+R Color Table:
+https://cocolaberica.github.io/rcolortable 
+:::
+
+## Row {height="20%"}
+::: {.card}
+Thank You!
+:::
