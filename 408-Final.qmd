@@ -136,6 +136,45 @@ map_data_fixed <- map_data_fixed[order(map_data_fixed$State), ]
 #add in Puerto Rico after the alphabetization to match statepop
 map_data_fixed <- map_data_fixed |> add_row(
   State = "Puerto Rico", S_Quantity = NA)
+#Plotting
+
+#matching arch data to statepop
+map_data_fixed$fips <- statepop$fips
+map_data_fixed$abbr <- statepop$abbr
+
+#Plot all States where Artifacts were Observed
+USA_MAP <- plot_usmap(data = map_data_fixed,
+           values = "S_Quantity") +
+  labs(title = "States where Artifacts were Observed") + 
+  theme(panel.background = element_rect(colour = "black"))+
+  scale_fill_continuous(low = "lightblue", high ="lightblue", 
+                        name = "Quantity",label = scales::comma)+
+  theme(legend.position = "FALSE")
+
+#Plot Bar Plot with top 5 States by Quantity
+map_data2 <- map_data |> 
+  filter(S_Quantity > 500) 
+map_data2 <- map_data2[order(map_data2$S_Quantity), ]
+
+BAR_PLOT <- ggplot(map_data2, aes(x=State, y=S_Quantity)) + 
+  geom_bar(fill = "tomato", stat = "identity") + labs(
+    x = "Number of Artifacts Observed",
+    y = "State",
+    title = "Top 5 States with the most Artifacts") +
+  geom_text(aes(label = S_Quantity), vjust = -0.2, size = 8) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+#Plot Gradient Map by States and Quantity (0-100)
+USA_0100_MAP <- plot_usmap(data = map_data_fixed,
+                    values = "S_Quantity") +
+  labs(title = "States Where Less Than 100 Artifacts were Observed") + 
+  theme(panel.background = element_rect(colour = "black"))+
+  scale_fill_continuous(low = "lightblue", high ="tomato", 
+                        name = "Quantity",label = scales::comma,
+                        limits = c(0,100)) + 
+  theme(legend.position = "right")
+
 ```
 
 
