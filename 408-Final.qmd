@@ -175,6 +175,61 @@ USA_0100_MAP <- plot_usmap(data = map_data_fixed,
                         limits = c(0,100)) + 
   theme(legend.position = "right")
 
+
+#More data cleaning for Corina's plots 
+
+arch_data_clean <- arch_data_fixed %>%
+  mutate(Material_clean = Material %>%
+           str_to_lower() %>%
+           str_trim() %>%
+           str_replace_all("[[:punct:]]+", " ") %>%
+           str_squish())
+
+arch_data_clean <- arch_data_clean %>%
+  filter(
+    !is.na(Type), Type != "",
+    !is.na(Class), Class != "",
+    !is.na(Material_clean), Material_clean != ""
+  )
+
+#Grouping variables for dendrogram
+arch_clean_1 <- arch_data_clean |>
+  mutate(Type = fct_collapse(Type, UNIDENTIFIED = c("UNIDENTIFIED MATERIAL", "COMPOSITE"), HUMAN = "HUMAN REMAINS"))
+
+arch_clean_2 <- arch_clean_1 |>
+  mutate(Class = fct_collapse(Class, BONE = c("BONE", "OSTEOLOGICAL", "ANTLER"), CLAY = c("CLAY", "CERAMIC"), OTHER_MINERAL = "OTHER MINERAL MATERIALS", OTHER_ANIMAL = "OTHER ANIMAL MATERIALS", OTHER_PLANT = "OTHER PLANT MATERIALS"))
+
+arch_clean_3 <- arch_clean_2 |>
+  mutate(Material_clean = fct_collapse(Material_clean, Lithic = c("mixed lithic", "lithic", "unidentified lithic", "unspecified lithic"), Quartz = c("crystal quartz", "quartz", "quartzite"), Chert_Flint = c("chert", "flint english", "cryptocrystalline"), Chalcedony_Jasper = c("chalcedony", "jasper"), Volcanic = c("rhyolite", "metarhyolite", "basalt"), Coarse_Ingeous = c("granite", "gabbroid"), Sedimentary = c("sandstone", "shale"), Metamorphic = c("slate", "argillite"), Soft_Stone = c("steatite", "soapstone", "catlinite"), Mineral_Pigments = c("ochre", "hematite", "limonite"), Other_Minerals = c("mica", "greenstone", "ironstone"), Ceramic = c("ceramic", "ceramic porcelain", "ceramic coarse ew", "ceramic refined ew"), Architectural_Ceramic = c("brick", "clay", "kaolin"), Unidentified = c("ceramic unidentifie", "unknown material", "ceramic unidentifi", "unspecified plant", "unidentified", "undetermined", "miscellaneous"), Iron = c("iron", "iron and brick"), Non_Ferrous_Metal = c("copper alloy", "copper", "lead", "aluminum"), Industrial_Byproducts = c("slag", "clinker"), Metal = c("metal", "metal unidentified", "cast"), Glass = c("milk glass", "glass"), shell = c("shell", "shell and bone"), Teeth = c("ivory", "tooth", "teeth"), Organic = c("coal", "charcoal", "organic"), Botanical = c("wood", "bark", "seed", "nut", "vegetation"), Synthetic = c("paper", "plastic"), Construction = c("mortar", "plaster"), Mixed_Materials = c("quartz mixed lithic", "chert mixed lithic", "mixed material", "multiple materials")))
+
+#narrowing data to just Virginia
+virginia_data <- arch_data_clean |>
+  filter(State == "Virginia")
+
+#narrowing data to just Virginia where the type is always Bones
+bone_virginia_data <- virginia_data |>
+  filter(Type == "ANIMAL")
+
+#narowing data do just bones in Virginia where both material and type is bones 
+bones_virginia_data <- bone_virginia_data |>
+  filter(Material_clean == "bone")
+
+#Filtering Artifacts with turt in the name
+Turtle <- bones_virginia_data %>%
+  filter(str_detect(Name, regex("turt", ignore_case = TRUE)))
+
+#Filtering artifact with owl in the name
+owl_rows <- bones_virginia_data %>%
+  filter(str_detect(Name, regex("owl", ignore_case = TRUE)))
+
+#Combining missppelling and getting rid of eastern meadowlark to just have owls
+owl_rows_1 <- owl_rows |>
+  mutate(Name = fct_collapse(
+    Name,
+    `eastern screech owl`= c("Eastern screech owl", "eastern screech owl"),
+    Barred_owl = "Barred owl"
+  )) |>
+  filter(Name != "Eastern meadowlark")
 ```
 
 
