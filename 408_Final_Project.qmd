@@ -123,3 +123,253 @@ arch_data_clean <- arch_data_clean %>%
   )
 
 ```
+
+```{r}
+unique(arch_clean_1$Type)
+
+arch_clean_1 <- arch_data_clean |>
+  mutate(Type = fct_collapse(Type, UNIDENTIFIED = c("UNIDENTIFIED MATERIAL", "COMPOSITE"), HUMAN = "HUMAN REMAINS"))
+
+unique(arch_clean_2$Class)
+
+arch_clean_2 <- arch_clean_1 |>
+  mutate(Class = fct_collapse(Class, BONE = c("BONE", "OSTEOLOGICAL", "ANTLER"), CLAY = c("CLAY", "CERAMIC"), OTHER_MINERAL = "OTHER MINERAL MATERIALS", OTHER_ANIMAL = "OTHER ANIMAL MATERIALS", OTHER_PLANT = "OTHER PLANT MATERIALS"))
+
+unique(arch_data_clean$Material_clean)
+
+arch_clean_3 <- arch_clean_2 |>
+  mutate(Material_clean = fct_collapse(Material_clean, Lithic = c("mixed lithic", "lithic", "unidentified lithic", "unspecified lithic"), Quartz = c("crystal quartz", "quartz", "quartzite"), Chert_Flint = c("chert", "flint english", "cryptocrystalline"), Chalcedony_Jasper = c("chalcedony", "jasper"), Volcanic = c("rhyolite", "metarhyolite", "basalt"), Coarse_Ingeous = c("granite", "gabbroid"), Sedimentary = c("sandstone", "shale"), Metamorphic = c("slate", "argillite"), Soft_Stone = c("steatite", "soapstone", "catlinite"), Mineral_Pigments = c("ochre", "hematite", "limonite"), Other_Minerals = c("mica", "greenstone", "ironstone"), Ceramic = c("ceramic", "ceramic porcelain", "ceramic coarse ew", "ceramic refined ew"), Architectural_Ceramic = c("brick", "clay", "kaolin"), Unidentified = c("ceramic unidentifie", "unknown material", "ceramic unidentifi", "unspecified plant", "unidentified", "undetermined", "miscellaneous"), Iron = c("iron", "iron and brick"), Non_Ferrous_Metal = c("copper alloy", "copper", "lead", "aluminum"), Industrial_Byproducts = c("slag", "clinker"), Metal = c("metal", "metal unidentified", "cast"), Glass = c("milk glass", "glass"), shell = c("shell", "shell and bone"), Teeth = c("ivory", "tooth", "teeth"), Organic = c("coal", "charcoal", "organic"), Botanical = c("wood", "bark", "seed", "nut", "vegetation"), Synthetic = c("paper", "plastic"), Construction = c("mortar", "plaster"), Mixed_Materials = c("quartz mixed lithic", "chert mixed lithic", "mixed material", "multiple materials"))) 
+
+
+unique(arch_clean_3$Material_clean)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+#install.packages("ggraph")
+library(ggraph)
+library(igraph)
+library(tidyverse)
+library(RColorBrewer)
+
+d1 <- arch_clean_3 |>
+  distinct(Type) |>
+  transmute(from = "origin", to = Type)
+
+d2 <- arch_clean_3 |>
+  distinct(Type, Class) |>
+  transmute(from = Type, to = Class)
+
+d3 <- arch_clean_3 |>
+  distinct(Class, Material_clean) |>
+  transmute(from = Class, to = Material_clean)
+
+edges <- bind_rows(d1, d2, d3) |>
+  filter(!is.na(from), !is.na(to))
+
+mygraph <- graph_from_data_frame(edges)
+
+ggraph(mygraph, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal(colour="grey") +
+  scale_edge_colour_distiller(palette = "RdPu") +
+   geom_node_text(aes(x = x*1.15, y=y*1.15, label = name, angle = node_angle(x, y)), size = 2.7, ) +
+  geom_node_point(aes(filter = leaf, x = x*1.07, y=y*1.07, colour="d1", size= 2, alpha=0.2)) +
+  scale_colour_manual(values= rep( brewer.pal(9,"Paired") , 30)) +
+  scale_size_continuous( range = c(0.1,10) ) +
+  theme_void() +
+  theme(
+    legend.position="none",
+    plot.margin=unit(c(0,0,0,0),"cm"),
+  ) +
+  expand_limits(x = c(-1.3, 1.3), y = c(-1.3, 1.3))
+```
+
+
+
+```{r fig.height = 8, fig.width = 12}
+library(easyalluvial)
+arch_clean_3 %>% dplyr::select(Type, Class, Material_clean) %>% alluvial_wide()
+```
+
+```{r}
+virginia_data <- arch_data_clean |>
+  filter(State == "Virginia")
+
+#Type
+ggplot(virginia_data, aes(x = Type)) +
+  geom_bar(aes(fill = Type)) + 
+  labs(
+    title = "Type in Virginia",
+    x = "Type",
+    y = "Count"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#Class
+ggplot(virginia_data, aes(x = Class)) +
+  geom_bar(aes(fill = Class)) + 
+  labs(
+    title = "Class in Virginia",
+    x = "Class",
+    y = "Count"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#Material_clean
+ggplot(virginia_data, aes(x = Material)) +
+  geom_bar(aes(fill = Material)) + 
+  labs(
+    title = "Material in Virginia",
+    x = "Material",
+    y = "Count"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+d4 <- virginia_data |>
+  distinct(Type) |>
+  transmute(from = "origin", to = Type)
+
+d5 <- virginia_data |>
+  distinct(Type, Class) |>
+  transmute(from = Type, to = Class)
+
+d6 <- virginia_data |>
+  distinct(Class, Material_clean) |>
+  transmute(from = Class, to = Material_clean)
+
+edges1 <- bind_rows(d4, d5, d6) |>
+  filter(!is.na(from), !is.na(to))
+
+mygraph1 <- graph_from_data_frame(edges1)
+
+ggraph(mygraph1, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal(colour="grey") +
+  geom_node_point(aes(color = name), size = 2, show.legend = FALSE) +
+  geom_node_text(aes(label = name, angle = node_angle(x, y)), size = 2.5, hjust = 0.5) +
+  theme_void()
+
+```
+
+```{r}
+ggplot(virginia_data, aes(x = City)) +
+  geom_bar(aes(fill = City)) + 
+  labs(
+    title = "City in Virginia",
+    x = "City",
+    y = "Count"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+unique(virginia_data$City)
+```
+
+```{r fig.height = 16, fig.width = 12}
+virginia_data %>% dplyr::select(Type, Class, Material_clean) %>% alluvial_wide()
+```
+
+```{r}
+bone_virginia_data <- virginia_data |>
+  filter(Type == "ANIMAL")
+
+d8 <- bone_virginia_data |>
+  distinct(Class) |>
+  transmute(from = "origin", to = Class)
+
+d9 <- bone_virginia_data |>
+  distinct(Class, Material_clean) |>
+  transmute(from = Class, to = Material_clean)
+
+edges2 <- bind_rows(d8, d9) |>
+  filter(!is.na(from), !is.na(to))
+
+mygraph2 <- graph_from_data_frame(edges2)
+
+ggraph(mygraph2, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal(colour="grey") +
+  geom_node_point(aes(color = name), size = 2, show.legend = TRUE) +
+  geom_node_text(aes(label = name, angle = node_angle(x, y)), size = 2.5, hjust = 0.5) +
+  theme_void()
+
+```
+
+
+```{r}
+bones_virginia_data <- virginia_data |>
+  filter(Material_clean == "bone")
+
+d10 <- bones_virginia_data |>
+  distinct(Material_clean) |>
+  transmute(from = "origin", to = Material_clean)
+
+d11 <- bones_virginia_data |>
+  distinct(Material_clean, Name) |>
+  transmute(from = Material_clean, to = Name)
+
+edges3 <- bind_rows(d8, d9) |>
+  filter(!is.na(from), !is.na(to))
+
+mygraph3 <- graph_from_data_frame(edges3)
+
+ggraph(mygraph3, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal(colour="grey") +
+  geom_node_point(aes(color = name), size = 2, show.legend = FALSE) +
+  geom_node_text(aes(label = name, angle = node_angle(x, y)), size = 2.5, hjust = 0.5) +
+  theme_void()
+```
+
+```{r}
+bones_virginia_data <- virginia_data |>
+  filter(Material_clean == "bone")
+
+owl_rows <- bones_virginia_data %>%
+  filter(str_detect(Name, regex("owl", ignore_case = TRUE)))
+
+owl_rows_1 <- owl_rows |>
+  mutate(Name = fct_collapse(
+    Name,
+    `eastern screech owl`= c("Eastern screech owl", "eastern screech owl"),
+    Barred_owl = "Barred owl"
+  )) |>
+  filter(Name != "Eastern meadowlark")
+
+
+ggplot(owl_rows_1, aes(x = Name)) +
+  geom_bar(aes(fill = Name)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none")
+```
+
+```{r}
+Turtle <- bones_virginia_data %>%
+  filter(str_detect(Name, regex("turt", ignore_case = TRUE)))
+
+
+ggplot(owl_rows_1, aes(x = Name)) +
+  geom_bar(aes(fill = Name)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none")
+```
+
+
