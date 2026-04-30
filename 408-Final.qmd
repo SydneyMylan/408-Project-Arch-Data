@@ -310,3 +310,76 @@ ggraph(mygraph, layout = 'dendrogram', circular = TRUE) +
   ) +
   expand_limits(x = c(-1.3, 1.3), y = c(-1.3, 1.3))
 ```
+
+# Virginia Bones
+
+## Row {height="50%"}
+```{r}
+#| title: Virginia
+#ungrouped dendragram of just Virginia
+d4 <- virginia_data |>
+  distinct(Type) |>
+  transmute(from = "origin", to = Type)
+
+d5 <- virginia_data |>
+  distinct(Type, Class) |>
+  transmute(from = Type, to = Class)
+
+d6 <- virginia_data |>
+  distinct(Class, Material_clean) |>
+  transmute(from = Class, to = Material_clean)
+
+edges1 <- bind_rows(d4, d5, d6) |>
+  filter(!is.na(from), !is.na(to))
+
+mygraph1 <- graph_from_data_frame(edges1)
+
+ggraph(mygraph1, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal(colour="grey") +
+  geom_node_point(aes(color = name), size = 2, show.legend = FALSE) +
+  geom_node_text(aes(label = name, angle = node_angle(x, y)), size = 2.5, hjust = 0.5) +
+  theme_void()
+```
+
+```{r}
+#| title: Bones in Virginia
+# Dendrogram of the animals in Virginia
+d8 <- bone_virginia_data |>
+  distinct(Class) |>
+  transmute(from = "origin", to = Class)
+
+d9 <- bone_virginia_data |>
+  distinct(Class, Material_clean) |>
+  transmute(from = Class, to = Material_clean)
+
+edges2 <- bind_rows(d8, d9) |>
+  filter(!is.na(from), !is.na(to))
+
+mygraph2 <- graph_from_data_frame(edges2)
+
+ggraph(mygraph2, layout = 'dendrogram', circular = TRUE) + 
+  geom_edge_diagonal(colour="grey") +
+  geom_node_point(aes(color = name), size = 2, show.legend = FALSE) +
+  geom_node_text(aes(label = name, angle = node_angle(x, y)), size = 3.5, hjust = 0.5) +
+  theme_void()
+```
+
+## Row {height="50%"}
+
+```{r}
+#| title: Turtle
+#Bar Chart of Bones in Virginia that are turtles 
+ggplot(Turtle, aes(x = Name)) +
+  geom_bar(aes(fill = Name)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none")
+```
+
+```{r}
+#| title: Owls
+#Bar Chart of Bones in Virginia that are owls 
+ggplot(owl_rows_1, aes(x = Name)) +
+  geom_bar(aes(fill = Name)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        legend.position = "none")
+```
